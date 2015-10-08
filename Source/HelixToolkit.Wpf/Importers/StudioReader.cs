@@ -158,12 +158,38 @@ namespace HelixToolkit.Wpf
         {
         }
 
-        /// <summary>
-        /// Reads the model from the specified stream.
-        /// </summary>
-        /// <param name="s">The stream.</param>
-        /// <returns>The model.</returns>
-        public override Model3DGroup Read(Stream s)
+		/// <summary>
+		/// Reads the model from the specified path.
+		/// </summary>
+		/// <param name="path">The path.</param>
+		/// <param name="_applyNormalToForce">The toggle.</param>
+		/// <returns>The model.</returns>
+		public Model3DGroup Read(string path, bool _applyNormalToForce)
+		{
+			this.Directory = Path.GetDirectoryName(path);
+			using (var s = File.OpenRead(path))
+			{
+				return this.Read(s, _applyNormalToForce);
+			}
+		}
+
+		/// <summary>
+		/// Reads the model from the specified stream.
+		/// </summary>
+		/// <param name="s">The stream.</param>
+		/// <returns>The model.</returns>
+		public override Model3DGroup Read(Stream s)
+	    {
+		    return Read(s, false);
+	    }
+
+		/// <summary>
+		/// Reads the model from the specified path.
+		/// </summary>
+		/// <param name="s">The stream.</param>
+		/// <param name="_applyNormalToFace">The toggle.</param>
+		/// <returns>The model.</returns>
+		public Model3DGroup Read(Stream s, bool _applyNormalToFace)
         {
             using (var reader = new BinaryReader(s))
             {
@@ -220,7 +246,7 @@ namespace HelixToolkit.Wpf
                         mg = new Model3DGroup();
                         foreach (var m in this.meshes)
                         {
-                            var model = m.CreateModel();
+                            var model = m.CreateModel(_applyNormalToFace);
                             if (this.Freeze)
                             {
                                 model.Freeze();
@@ -789,9 +815,29 @@ namespace HelixToolkit.Wpf
             public Material Material { get; set; }
             public Material BackMaterial { get; set; }
 
-            public Model3D CreateModel()
+            public Model3D CreateModel(bool _applyNormalToFace = false)
             {
-                var geometry = new MeshGeometry3D
+				if (_applyNormalToFace)
+				{
+					var positions = new List<Point3D>();
+					var triangleIndices = new List<int>();
+
+					for (var i = 0; i < TriangleIndices.Count; i += 3)
+					{
+						positions.Add(Positions[TriangleIndices[i]]);
+						positions.Add(Positions[TriangleIndices[i + 1]]);
+						positions.Add(Positions[TriangleIndices[i + 2]]);
+
+						triangleIndices.Add(i);
+						triangleIndices.Add(i + 1);
+						triangleIndices.Add(i + 2);
+					}
+
+					Positions = positions;
+					TriangleIndices = triangleIndices;
+				}
+
+				var geometry = new MeshGeometry3D
                                    {
                                        Positions = new Point3DCollection(this.Positions),
                                        TriangleIndices = new Int32Collection(this.TriangleIndices)

@@ -25,6 +25,7 @@ namespace HelixToolkit.Wpf
         public ModelImporter()
         {
             this.DefaultMaterial = Materials.Blue;
+	        this.ApplyNormalToFace = false;
         }
 
         /// <summary>
@@ -35,15 +36,20 @@ namespace HelixToolkit.Wpf
         /// </value>
         public Material DefaultMaterial { get; set; }
 
-        /// <summary>
-        /// Loads a model from the specified path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="dispatcher">The dispatcher used to create the model.</param>
-        /// <param name="freeze">Freeze the model if set to <c>true</c>.</param>
-        /// <returns>A model.</returns>
-        /// <exception cref="System.InvalidOperationException">File format not supported.</exception>
-        public Model3DGroup Load(string path, Dispatcher dispatcher = null, bool freeze = false)
+		/// <summary>
+		/// Gets or sets whether the face normal will be applied to each face, not points.
+		/// </summary>
+		public bool ApplyNormalToFace { get; set; }
+
+		/// <summary>
+		/// Loads a model from the specified path.
+		/// </summary>
+		/// <param name="path">The path.</param>
+		/// <param name="dispatcher">The dispatcher used to create the model.</param>
+		/// <param name="freeze">Freeze the model if set to <c>true</c>.</param>
+		/// <returns>A model.</returns>
+		/// <exception cref="System.InvalidOperationException">File format not supported.</exception>
+		public Model3DGroup Load(string path, Dispatcher dispatcher = null, bool freeze = false)
         {
             if (path == null)
             {
@@ -67,7 +73,7 @@ namespace HelixToolkit.Wpf
                 case ".3ds":
                     {
                         var r = new StudioReader(dispatcher) { DefaultMaterial = this.DefaultMaterial, Freeze = freeze };
-                        model = r.Read(path);
+                        model = r.Read(path, ApplyNormalToFace);
                         break;
                     }
 

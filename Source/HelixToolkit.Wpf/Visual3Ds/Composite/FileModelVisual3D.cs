@@ -33,10 +33,16 @@ namespace HelixToolkit.Wpf
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
             "Source", typeof(string), typeof(FileModelVisual3D), new UIPropertyMetadata(null, SourceChanged));
 
-        /// <summary>
-        /// The model loaded event.
-        /// </summary>
-        private static readonly RoutedEvent ModelLoadedEvent = EventManager.RegisterRoutedEvent(
+		/// <summary>
+		/// Identifies the <see cref="ApplyNormalToFace"/> dependency property.
+		/// </summary>
+		public static readonly DependencyProperty ApplyNormalToFaceProperty = DependencyProperty.Register(
+			"ApplyNormalToFace", typeof(bool), typeof(FileModelVisual3D), new UIPropertyMetadata(false, SourceChanged));
+
+		/// <summary>
+		/// The model loaded event.
+		/// </summary>
+		private static readonly RoutedEvent ModelLoadedEvent = EventManager.RegisterRoutedEvent(
             "ModelLoaded", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(FileModelVisual3D));
 
         /// <summary>
@@ -91,16 +97,33 @@ namespace HelixToolkit.Wpf
             }
         }
 
-        /// <summary>
-        /// The source changed.
-        /// </summary>
-        /// <param name="obj">
-        /// The sender.
-        /// </param>
-        /// <param name="args">
-        /// The args.
-        /// </param>
-        protected static void SourceChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+		/// <summary>
+		/// Gets or sets whether the face normal will be applied to each face, not points.
+		/// </summary>
+		/// <value>ddd</value>
+		public bool ApplyNormalToFace
+		{
+			get
+			{
+				return (bool)this.GetValue(ApplyNormalToFaceProperty);
+			}
+
+			set
+			{
+				this.SetValue(ApplyNormalToFaceProperty, value);
+			}
+		}
+
+		/// <summary>
+		/// The source changed.
+		/// </summary>
+		/// <param name="obj">
+		/// The sender.
+		/// </param>
+		/// <param name="args">
+		/// The args.
+		/// </param>
+		protected static void SourceChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
             ((FileModelVisual3D)obj).SourceChanged();
         }
@@ -119,7 +142,11 @@ namespace HelixToolkit.Wpf
         /// </summary>
         protected virtual void SourceChanged()
         {
-            var importer = new ModelImporter { DefaultMaterial = this.DefaultMaterial };
+            var importer = new ModelImporter
+            {
+	            DefaultMaterial = this.DefaultMaterial,
+				ApplyNormalToFace = this.ApplyNormalToFace,
+            };
             this.Visual3DModel = this.Source != null ? importer.Load(this.Source) : null;
             this.OnModelLoaded();
         }
